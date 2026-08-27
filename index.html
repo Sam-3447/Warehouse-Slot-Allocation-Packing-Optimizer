@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NexVault — Warehouse Slot Allocation &amp; Packing Optimizer</title>
+    <meta name="description"
+        content="NexVault decides where inventory should sit and how orders should be packed — cutting travel time, wasted space, and shipping cost in one engine." />
+    <meta name="theme-color" content="#080B11" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="css/theme.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <script>
+      (function() {
+        var saved = localStorage.getItem("nexvault-theme") || localStorage.getItem("optivault-theme") || localStorage.getItem("slotwise-theme");
+        var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        var theme = saved || (prefersDark ? "dark" : "dark");
+        document.documentElement.setAttribute("data-theme", theme);
+      })();
+    </script>
+</head>
+
+<body>
+
+    
+    <header class="site-nav">
+        <div class="wrap d-flex align-items-center justify-content-between">
+            <a href="#" class="brand mono">NEX<span>VAULT</span></a>
+
+            <nav class="nav-links mono d-none d-md-flex align-items-center">
+                <a href="#system">SYSTEM</a>
+                <a href="#impact">IMPACT</a>
+                <a href="#start">START</a>
+                <a href="#" class="btn-account" data-am-open>ACCOUNT</a>
+
+                <button class="theme-toggle mono" id="themeToggle" type="button" aria-label="Switch to dark mode"
+                    title="Switch to dark mode">
+                    <span class="theme-icon" aria-hidden="true">◐</span>
+                    <span class="theme-label">DARK</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    
+    <section class="hero wrap">
+        <div class="row g-5 align-items-start">
+
+            <div class="col-lg-6">
+
+                <span class="tag mono">
+                    WAREHOUSE OPTIMIZATION ENGINE
+                </span>
+
+                <h1 class="serif hero-title">
+                    Every item has a <em class="hl">correct</em> place.
+                    Every box, a <em class="hl">tight</em> fit.
+                </h1>
+
+                <p class="lead-copy">
+                    NexVault decides where inventory should sit and how orders should
+                    be packed — cutting travel time, wasted space, and shipping cost
+                    in one engine.
+                </p>
+
+                <div class="d-flex flex-wrap gap-3 mt-4">
+                    <a href="signup.html" class="btn-primary mono">
+                        REQUEST ACCESS
+                    </a>
+
+                    <a href="#system" class="btn-ghost mono">
+                        SEE HOW IT WORKS
+                    </a>
+                </div>
+
+                <div class="row mt-5 hero-meta mono">
+
+                    <div class="col-6">
+                        <span class="muted">DEPLOYMENT</span>
+                        <p>Zone-level pilot</p>
+                    </div>
+
+                    <div class="col-6">
+                        <span class="muted">INTEGRATION</span>
+                        <p>Sits beside your WMS</p>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="col-lg-6">
+
+                <div class="blueprint">
+
+                    <div class="d-flex justify-content-between mono bp-head">
+                        <span>FIG. 01 — UNIT LOAD / PACK ENVELOPE</span>
+                        <span class="hl">SCALE 1:20</span>
+                    </div>
+
+                    <div class="bp-body">
+
+                        <svg class="bp-svg" viewBox="0 0 340 260" fill="none">
+
+                            <path d="M95 95 L150 55 L285 55 L230 95 Z" stroke="var(--svg-line)" stroke-width="1.6" />
+
+                            <path d="M230 95 L285 55 L285 175 L230 215 Z" stroke="var(--svg-line)" stroke-width="1.6" />
+
+                            <rect x="95" y="95" width="135" height="120" stroke="var(--svg-line)" stroke-width="1.6" />
+
+                            <g stroke="var(--svg-grid)" stroke-width="1">
+
+                                <rect x="95" y="95" width="45" height="40" fill="var(--orange)" />
+                                <rect x="140" y="95" width="45" height="40" fill="var(--green)" />
+                                <rect x="185" y="95" width="45" height="40" fill="var(--svg-white)" />
+
+                                <rect x="95" y="135" width="45" height="40" fill="var(--svg-white)" />
+                                <rect x="140" y="135" width="45" height="40" fill="var(--svg-white)" />
+                                <rect x="185" y="135" width="45" height="40" fill="var(--orange)" />
+
+                                <rect x="95" y="175" width="45" height="40" fill="var(--green)" />
+                                <rect x="140" y="175" width="45" height="40" fill="var(--orange)" />
+                                <rect x="185" y="175" width="45" height="40" fill="var(--svg-white)" />
+
+                            </g>
+
+                            <line x1="95" y1="232" x2="230" y2="232" stroke="var(--svg-muted)" />
+
+                            <line x1="95" y1="227" x2="95" y2="237" stroke="var(--svg-muted)" />
+
+                            <line x1="230" y1="227" x2="230" y2="237" stroke="var(--svg-muted)" />
+
+                            <text x="162" y="250" fill="var(--svg-muted)" font-family="monospace" font-size="11"
+                                text-anchor="middle">
+                                1200 MM
+                            </text>
+
+                            <line x1="303" y1="55" x2="303" y2="175" stroke="var(--svg-muted)" />
+
+                            <line x1="298" y1="55" x2="308" y2="55" stroke="var(--svg-muted)" />
+
+                            <line x1="298" y1="175" x2="308" y2="175" stroke="var(--svg-muted)" />
+
+                            <text x="312" y="132" fill="var(--svg-muted)" font-family="monospace" font-size="11">
+                                800
+                            </text>
+
+                            <line x1="230" y1="42" x2="285" y2="42" stroke="var(--svg-muted)" />
+
+                            <line x1="230" y1="37" x2="230" y2="47" stroke="var(--svg-muted)" />
+
+                            <line x1="285" y1="37" x2="285" y2="47" stroke="var(--svg-muted)" />
+
+                            <text x="238" y="34" fill="var(--svg-muted)" font-family="monospace" font-size="11">
+                                DEPTH
+                            </text>
+
+                            <line x1="285" y1="55" x2="322" y2="34" stroke="var(--orange)" stroke-dasharray="4 3" />
+
+                            <line x1="285" y1="115" x2="322" y2="115" stroke="var(--orange)" stroke-dasharray="4 3" />
+
+                            <circle cx="322" cy="34" r="3" fill="var(--orange)" />
+
+                            <text x="286" y="26" fill="var(--orange)" font-family="monospace" font-size="11">
+                                FIT 94%
+                            </text>
+
+                        </svg>
+
+                        <span class="bp-note mono">
+                            SLOT A-07 / HIGH VELOCITY
+                        </span>
+
+                    </div>
+
+                    <div class="d-flex justify-content-between mono bp-foot muted">
+                        <span>REV. 04</span>
+                        <span>NexVault / PACKING OPTIMIZER</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+    
+    <section id="system" class="wrap">
+
+        <div class="dashboard">
+
+           <div class="nexvault-message" id="nexvaultMessage">
+    <span class="welcome-text">Welcome to</span>
+    <span class="welcome-brand">NexVault</span>
+</div>
+
+            <div class="row g-4">
+
+                <div class="col-lg-8">
+
+                    <span class="mono muted small">
+                        LIVE SLOT MAP — ZONE A
+                    </span>
+
+                    <div class="d-flex justify-content-between align-items-baseline">
+
+                        <h3 class="serif dash-title">
+                            48 slots under active allocation
+                        </h3>
+
+                        <span class="mono muted small">
+                            UPDATED 12S AGO
+                        </span>
+
+                    </div>
+
+                    <div class="slot-grid mono" id="slotGrid"></div>
+
+                </div>
+
+                <div class="col-lg-4 status-col">
+
+                    <span class="mono muted small">
+                        STATUS
+                    </span>
+
+                    <ul class="legend mono">
+
+                        <li>
+                            <i class="sw o"></i>
+                            High-velocity (near dock)
+                        </li>
+
+                        <li>
+                            <i class="sw g"></i>
+                            Allocated
+                        </li>
+
+                        <li>
+                            <i class="sw a"></i>
+                            Available
+                        </li>
+
+                    </ul>
+
+                    <hr />
+
+                    <div class="d-flex justify-content-between align-items-baseline">
+
+                        <span class="mono muted small">
+                            OCCUPANCY
+                        </span>
+
+                        <span class="serif hl big-num">
+                            72%
+                        </span>
+
+                    </div>
+
+                    <div class="bar">
+                        <div class="bar-fill" style="width:72%"></div>
+                    </div>
+
+                    <div class="stat-row mono">
+                        <span class="muted">SLOTS FREE</span>
+                        <b>13</b>
+                    </div>
+
+                    <div class="stat-row mono">
+                        <span class="muted">AVG PICK PATH</span>
+                        <b>38 m</b>
+                    </div>
+
+                    <p class="live mono">
+                        <span class="dot"></span>
+                        LIVE SYSTEM
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    
+    <section id="impact" class="wrap impact-row">
+
+        <div class="row">
+
+            <div class="col-6 col-md-3 impact-cell">
+                <span class="serif hl big-num">+31%</span>
+                <p class="mono muted small">SPACE UTILIZATION</p>
+            </div>
+
+            <div class="col-6 col-md-3 impact-cell">
+                <span class="serif hl big-num">-24%</span>
+                <p class="mono muted small">PICK TRAVEL TIME</p>
+            </div>
+
+            <div class="col-6 col-md-3 impact-cell">
+                <span class="serif hl big-num">-18%</span>
+                <p class="mono muted small">SHIPPING COST / ORDER</p>
+            </div>
+
+            <div class="col-6 col-md-3 impact-cell">
+                <span class="serif hl big-num">99.9%</span>
+                <p class="mono muted small">ALLOCATION ACCURACY</p>
+            </div>
+
+        </div>
+
+    </section>
+
+    
+    <section class="wrap engines">
+
+        <h2 class="serif section-title">
+            Two engines. One warehouse.
+            <span class="rule"></span>
+        </h2>
+
+        <p class="lead-copy sub">
+            Allocation and packing share one model of your inventory,
+            so a decision made at receiving still holds at the pack bench.
+        </p>
+
+        <hr class="thick" />
+
+        <div class="engine-item row">
+
+            <div class="col-md-2">
+                <span class="mono hl small">
+                    01 / SLOT ALLOCATION
+                </span>
+            </div>
+
+            <div class="col-md-7">
+
+                <h4 class="serif">
+                    Placement Engine
+                </h4>
+
+                <p class="lead-copy">
+                    Assigns incoming inventory to the best-fit warehouse slot
+                    using dimensions, capacity and movement priority.
+                </p>
+
+            </div>
+
+            <div class="col-md-3 diag">
+
+                <div class="d-inline-flex align-items-center gap-2">
+
+                    <span class="box-line">
+                        <i></i>
+                        <i></i>
+                    </span>
+
+                    <span class="arrow mono">
+                        - - &gt;
+                    </span>
+
+                    <span class="mini-grid">
+                        <span class="o"></span>
+                        <span></span>
+                        <span></span>
+                        <span class="g"></span>
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="engine-item row">
+
+            <div class="col-md-2">
+                <span class="mono hl small">
+                    02 / PACKING OPTIMIZER
+                </span>
+            </div>
+
+            <div class="col-md-7">
+
+                <h4 class="serif">
+                    3D Bin Packing
+                </h4>
+
+                <p class="lead-copy">
+                    Finds efficient box arrangements to reduce unused volume
+                    while respecting item dimensions and constraints.
+                </p>
+
+            </div>
+
+            <div class="col-md-3 diag">
+
+                <svg width="120" height="70" viewBox="0 0 120 70" fill="none" stroke="var(--svg-line)"
+                    stroke-width="1.3">
+
+                    <rect x="8" y="38" width="20" height="14" fill="var(--orange)" stroke="none" />
+
+                    <rect x="28" y="38" width="20" height="14" fill="var(--green)" stroke="none" />
+
+                    <rect x="28" y="24" width="20" height="14" fill="var(--green)" stroke="none" />
+
+                    <rect x="8" y="24" width="60" height="28" />
+
+                    <path d="M8 24 L26 10 L86 10 L68 24 Z" />
+
+                    <path d="M68 24 L86 10 L86 38 L68 52 Z" />
+
+                    <text x="94" y="16" fill="var(--orange)" stroke="none" font-family="monospace" font-size="8">
+                        94%
+                    </text>
+
+                </svg>
+
+            </div>
+
+        </div>
+
+        <div class="engine-item row">
+
+            <div class="col-md-2">
+                <span class="mono hl small">
+                    03 / INVENTORY SYNC
+                </span>
+            </div>
+
+            <div class="col-md-7">
+
+                <h4 class="serif">
+                    Real-Time Stock
+                </h4>
+
+                <p class="lead-copy">
+                    Keeps slot occupancy and inventory movements aligned
+                    so warehouse teams always work from current data.
+                </p>
+
+            </div>
+
+            <div class="col-md-3 diag">
+
+                <svg viewBox="0 0 120 40" class="spark">
+
+                    <polyline points="0,30 25,32 45,20 70,26 95,10 120,6" fill="none" stroke="var(--svg-line)"
+                        stroke-width="2" />
+
+                    <circle cx="95" cy="10" r="3" fill="var(--orange)" />
+
+                </svg>
+
+            </div>
+
+        </div>
+
+        <div class="engine-item row">
+
+            <div class="col-md-2">
+                <span class="mono hl small">
+                    04 / INTEGRATION
+                </span>
+            </div>
+
+            <div class="col-md-7">
+
+                <h4 class="serif">
+                    Works With Your WMS
+                </h4>
+
+                <p class="lead-copy">
+                    Designed to connect allocation, packing, orders and inventory
+                    through a clean service-based architecture.
+                </p>
+
+            </div>
+
+            <div class="col-md-3 diag">
+
+                <div class="d-inline-flex align-items-center gap-2">
+
+                    <span class="box-line">
+                        <i></i>
+                        <i></i>
+                    </span>
+
+                    <span class="node mono">
+                        -&lt;<i class="dot-o"></i>&gt;-
+                    </span>
+
+                    <span class="box-line">
+                        <i></i>
+                    </span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <hr class="thick" />
+
+    </section>
+
+    
+    <section class="wrap how">
+
+        <span class="mono muted small">
+            HOW IT WORKS
+        </span>
+
+        <div class="row g-4 mt-1">
+
+            <div class="col-md-4">
+
+                <div class="step-card">
+
+                    <span class="mono hl small">
+                        STEP 01
+                    </span>
+
+                    <h4 class="serif">
+                        Ingest dimensions
+                    </h4>
+
+                    <p class="lead-copy">
+                        Item size, weight, order velocity and slot capacity
+                        are read from your existing records.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <div class="step-card">
+
+                    <span class="mono hl small">
+                        STEP 02
+                    </span>
+
+                    <h4 class="serif">
+                        Allocate slot
+                    </h4>
+
+                    <p class="lead-copy">
+                        Fast movers land near the dock, bulk goes deep,
+                        and every slot keeps a valid fit.
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="col-md-4">
+
+                <div class="step-card">
+
+                    <span class="mono hl small">
+                        STEP 03
+                    </span>
+
+                    <h4 class="serif">
+                        Optimize pack
+                    </h4>
+
+                    <p class="lead-copy">
+                        Pack benches receive a carton choice and a load order
+                        that removes wasted volume.
+                    </p>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+    
+    <section class="wrap">
+
+        <div class="integrations mono">
+
+            <div class="row text-center int-names">
+
+                <div class="col">SAP EWM</div>
+                <div class="col">ORACLE WMS</div>
+                <div class="col">MANHATTAN</div>
+                <div class="col">NETSUITE</div>
+                <div class="col">SHOPIFY</div>
+
+            </div>
+
+            <hr />
+
+            <p class="int-note muted">
+                NEXVAULT SITS ALONGSIDE EXISTING SYSTEMS —
+                NO RIP-AND-REPLACE.
+            </p>
+
+        </div>
+
+    </section>
+
+    
+    <footer class="site-footer">
+
+        <div class="footer-inner">
+
+            <div class="row footer-top">
+
+                <div class="col-md-5">
+
+                    <a href="#" class="brand mono">
+                        NEX<span>VAULT</span>
+                    </a>
+
+                    <p class="mono muted small mt-2">
+                        WAREHOUSE SLOT ALLOCATION &amp; PACKING OPTIMIZER
+                    </p>
+
+                </div>
+
+                <div class="col-4 col-md-2 mono foot-col">
+
+                    <span class="muted small">
+                        PRODUCT
+                    </span>
+
+                    <a href="#">Placement Engine</a>
+                    <a href="#">Bin Packing</a>
+                    <a href="#">Inventory Sync</a>
+
+                </div>
+
+                <div class="col-4 col-md-2 mono foot-col">
+
+                    <span class="muted small">
+                        COMPANY
+                    </span>
+
+                    <a href="#">About</a>
+                    <a href="#">Careers</a>
+                    <a href="#">Contact</a>
+
+                </div>
+
+                <div class="col-4 col-md-2 mono foot-col">
+
+                    <span class="muted small">
+                        RESOURCES
+                    </span>
+
+                    <a href="#">Docs</a>
+                    <a href="#">Integrations</a>
+                    <a href="#">Security</a>
+
+                </div>
+
+            </div>
+
+            <div class="d-flex justify-content-between mono muted small footer-bottom">
+
+                <span>NEXVAULT SYSTEMS</span>
+                <span>©️ 2026</span>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+    
+    <div class="am-root" id="accessModal" aria-hidden="true">
+
+      <div class="am-panel" role="dialog" aria-modal="true"
+           aria-labelledby="amTitle" tabindex="-1">
+
+        <div class="am-head">
+
+          <div>
+            <div class="am-eyebrow"><i class="am-tick"></i> Access</div>
+
+            <h2 class="am-title" id="amTitle">How are you signing in?</h2>
+
+            <p class="am-sub">Pick the account you hold. This only decides
+              which sign-in form you get next.</p>
+          </div>
+
+          <button class="am-close" type="button"
+                  data-am-close aria-label="Close">&times;</button>
+
+        </div>
+
+        <div class="am-viewport">
+
+          
+          <div class="am-step" data-am-step="role">
+
+            <div class="am-options">
+
+              <button class="am-option" type="button" data-am-next="company">
+                <span>
+                  <span class="am-opt-tag">Organization</span>
+                  <span class="am-opt-name">Company</span>
+                  <span class="am-opt-desc">You work for a company whose
+                    warehouses run on NexVault.</span>
+                </span>
+                <span class="am-arrow" aria-hidden="true">&rarr;</span>
+              </button>
+
+              <button class="am-option" type="button" data-am-role="platform-admin">
+                <span>
+                  <span class="am-opt-tag">Internal</span>
+                  <span class="am-opt-name">Platform admin</span>
+                  <span class="am-opt-desc">NexVault staff overseeing every
+                    client company and approving new warehouses.</span>
+                </span>
+                <span class="am-arrow" aria-hidden="true">&rarr;</span>
+              </button>
+
+            </div>
+
+          </div>
+
+          
+          <div class="am-step" data-am-step="company" hidden>
+
+            <div class="am-trail">
+              <button class="am-back" type="button" data-am-back="role">&larr; Back</button>
+              <span class="am-trail-sep">/</span>
+              <span>Company</span>
+            </div>
+
+            <div class="am-options">
+
+              <button class="am-option" type="button" data-am-role="company-admin">
+                <span>
+                  <span class="am-opt-tag">Oversight</span>
+                  <span class="am-opt-name">Company admin</span>
+                  <span class="am-opt-desc">See every warehouse in your
+                    organization. View only — no stock changes.</span>
+                </span>
+                <span class="am-arrow" aria-hidden="true">&rarr;</span>
+              </button>
+
+              <button class="am-option" type="button" data-am-role="supervisor">
+                <span>
+                  <span class="am-opt-tag">Warehouse floor</span>
+                  <span class="am-opt-name">Supervisor</span>
+                  <span class="am-opt-desc">Pick the warehouse you're assigned
+                    to. Each one needs its own passcode.</span>
+                </span>
+                <span class="am-arrow" aria-hidden="true">&rarr;</span>
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+        <div class="am-foot">
+          <span>One sign-in per organization</span>
+          <span>No account? <a href="signup.html">Register your company</a></span>
+        </div>
+
+      </div>
+
+    </div>
+
+    <script src="js/script.js"></script>
+
+</body>
+
+</html>
