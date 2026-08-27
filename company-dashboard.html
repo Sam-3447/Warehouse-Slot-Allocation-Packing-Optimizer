@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NexVault Ledger — Warehouse Oversight</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/admin.css">
+<script>
+  (function() {
+    var saved = localStorage.getItem("nexvault-theme") || localStorage.getItem("optivault-theme") || localStorage.getItem("slotwise-theme");
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var theme = saved || (prefersDark ? "dark" : "dark");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+</head>
+<body>
+
+<header>
+  <div class="logo">NexVault <span>Ledger</span></div>
+
+  <nav>
+    <button class="active" data-view="overview" type="button">OVERVIEW</button>
+    <button data-view="requests" type="button">
+      REQUESTS<span class="count" id="reqCount" hidden>0</span>
+    </button>
+  </nav>
+
+  <div class="icons">
+    <span id="companyName">Company</span>
+    <span class="who" id="whoAmI" title="Sign out">—</span>
+  </div>
+</header>
+
+<div class="demo-banner" id="demoBanner" hidden>
+  Not signed in — showing the ledger in demo mode.
+  <a href="signin.html">Sign in as a company admin</a> to work against your own session.
+</div>
+
+<main>
+
+  
+  <section class="view on" data-section="overview">
+
+    <div class="eyebrow">01 &nbsp; FACILITY LEDGER</div>
+
+    <div class="titlebar">
+      <div>
+        <h1>Warehouse Oversight</h1>
+        <div class="sub" id="ledgerSummary">Loading site figures…</div>
+      </div>
+      <button class="btn" data-open-request type="button">Submit warehouse request</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><b id="statSites">—</b><span>ACTIVE SITES</span></div>
+      <div class="stat"><b id="statRequests">—</b><span>PENDING REQUESTS</span></div>
+      <div class="stat"><b id="statUtil">—</b><span>AVG UTILIZATION</span></div>
+      <div class="stat"><b id="statSlots">—</b><span>TOTAL SLOTS</span></div>
+      <div class="stat" id="statWaitingCard"><b id="statWaiting">—</b><span>UNITS WAITING</span></div>
+    </div>
+
+    <div class="filters">
+      <div class="tabs">
+        <button class="on" data-filter="all" type="button">All sites</button>
+        <button data-filter="busy" type="button">Over 65% full</button>
+        <button data-filter="roomy" type="button">Under 40% full</button>
+      </div>
+      <span class="live-note" id="liveNote">Figures read live from each site as supervisors work</span>
+    </div>
+
+    <div class="grid" id="siteGrid"></div>
+
+  </section>
+
+  
+  <section class="view" data-section="requests">
+
+    <div class="eyebrow">02 &nbsp; WAREHOUSE REQUESTS</div>
+
+    <div class="titlebar">
+      <div>
+        <h1>Requests</h1>
+        <div class="sub">A new warehouse cannot be opened from this account. Requests are filed here and stay pending until the NexVault platform team approves them.</div>
+      </div>
+      <button class="btn" data-open-request type="button">Submit warehouse request</button>
+    </div>
+
+    <div class="tabs" style="margin-top:22px">
+      <button class="on" data-reqfilter="open" type="button">Addition requests</button>
+      <button data-reqfilter="delete" type="button">Removal requests</button>
+    </div>
+
+    <div style="margin-top:16px" id="requestList"></div>
+
+  </section>
+
+</main>
+
+<footer>
+  FIGURES ARE READ DIRECTLY FROM EACH SITE'S LIVE SLOT MAP — THERE IS NO SEPARATE COPY.<br>
+  STOCK IS PLACED AND REMOVED ON SITE BY SUPERVISORS. THIS LEDGER IS VIEW-ONLY.
+</footer>
+
+<div class="modal" id="reqModal">
+  <div class="modal-panel">
+
+    <div class="modal-head">
+      <div>
+        <h3>Submit warehouse request</h3>
+        <div class="m-sub">Sent to the NexVault platform team for approval. Nothing is created until they accept it.</div>
+      </div>
+      <button class="btn plain" data-close type="button">Cancel</button>
+    </div>
+
+    <div class="modal-body">
+
+      <div id="reqBody">
+
+        <div class="form-error" id="reqError" hidden></div>
+
+        <form id="reqForm" novalidate>
+
+          <div class="field">CITY</div>
+          <input id="reqCity" type="text" placeholder="Ludhiana">
+
+          <div class="field">SITE ADDRESS</div>
+          <input id="reqAddress" type="text" placeholder="Focal Point Phase 5, Ludhiana">
+
+          <div class="duo">
+            <div>
+              <div class="field">SLOTS HAVE</div>
+              <input id="reqSlots" type="number" min="8" placeholder="40">
+            </div>
+            <div>
+              <div class="field">CONTACT PERSON</div>
+              <input id="reqContact" type="text" placeholder="Full name">
+            </div>
+          </div>
+
+          <div class="field">NOTES (OPTIONAL)</div>
+          <textarea id="reqNote" placeholder="What the site would store, expected volumes, timing…"></textarea>
+
+          <button class="btn" type="submit" style="width:100%">Send request</button>
+
+          <div class="approval-line">
+            The platform team reviews the rack profile and slot map before a site goes live, so approval is not automatic.
+          </div>
+
+        </form>
+      </div>
+
+      <div class="sent" id="reqSent" hidden>
+        <span class="tick">✓</span>
+        <h4>Request sent</h4>
+        <p>The NexVault platform team has it now. You'll see the status change here once they decide.</p>
+        <div class="ref-box">Reference <b id="sentRef">—</b></div>
+        <button class="btn" data-close type="button" style="width:100%">Done</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="deleteModal">
+  <div class="modal-panel" style="max-width:400px">
+    <div class="modal-head">
+      <div>
+        <h3>Request removal</h3>
+        <div class="m-sub">Sent to the NexVault platform team. The warehouse stays live until they approve it.</div>
+      </div>
+      <button class="btn plain" data-close type="button">Cancel</button>
+    </div>
+    <div class="modal-body">
+      <div class="approval-line" style="margin:0 0 16px;font-size:13px;color:var(--ink)">
+        Remove <b id="deleteCity">this warehouse</b> from the platform?
+      </div>
+      <button class="btn" id="deleteConfirm" style="width:100%;border-color:var(--red);color:var(--red)" type="button">Send removal request</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/floor.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
