@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NexVault Console — Platform Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/platform.css">
+<script>
+  (function() {
+    var saved = localStorage.getItem("nexvault-theme") || localStorage.getItem("optivault-theme") || localStorage.getItem("slotwise-theme");
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var theme = saved || (prefersDark ? "dark" : "dark");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div class="sq">N</div>
+    <div>
+      <b>NexVault Console</b>
+      <span>INTERNAL · PLATFORM ADMIN</span>
+    </div>
+  </div>
+
+  <nav>
+    <button class="active" data-console-view="requests" type="button">
+      WAREHOUSE REQUESTS<span class="count" id="navReqCount" hidden>0</span>
+    </button>
+    <button data-console-view="companies" type="button">
+      COMPANIES<span class="count" id="navCompCount" hidden>0</span>
+    </button>
+    <button data-console-view="sites" type="button">ALL SITES</button>
+  </nav>
+
+  <button class="sign-out" id="consoleSignOut" type="button">
+    <span id="adminWho">—</span> · SIGN OUT
+  </button>
+</header>
+
+<div class="demo-banner" id="demoBanner" hidden>
+  Not signed in as a platform admin — showing the console in demo mode.
+  <a href="signin.html">Sign in</a> with the platform admin account to work against your own session.
+</div>
+
+<main>
+
+  <div class="stats">
+    <div class="stat" id="cStatCompaniesCard">
+      <div class="l">CLIENT COMPANIES</div>
+      <b id="cStatCompanies">—</b>
+      <small id="cStatCompaniesSub">—</small>
+    </div>
+    <div class="stat" id="cStatRequestsCard">
+      <div class="l">OPEN REQUESTS</div>
+      <b id="cStatRequests">—</b>
+      <small id="cStatRequestsSub">—</small>
+    </div>
+    <div class="stat">
+      <div class="l">WAREHOUSES LIVE</div>
+      <b id="cStatSites">—</b>
+      <small id="cStatSitesSub">—</small>
+    </div>
+    <div class="stat">
+      <div class="l">TOTAL SLOTS</div>
+      <b id="cStatSlots">—</b>
+      <small id="cStatSlotsSub">—</small>
+    </div>
+  </div>
+
+  
+  <section class="view on" data-section="requests">
+    <h1>Warehouse requests</h1>
+    <p class="lead">
+      Filed by client company admins. Approving one builds the slot map, issues a
+      passcode and opens the site — the company sees it on their ledger straight
+      away and their supervisors can unlock it.
+    </p>
+
+    <div style="margin-top:22px">
+      <div class="section-title">Queue</div>
+      <div class="queue" id="requestQueue"></div>
+    </div>
+  </section>
+
+  
+  <section class="view" data-section="companies">
+    <h1>Client companies</h1>
+    <p class="lead">
+      Registrations from the sign-up page. An account cannot sign in until it is
+      approved here.
+    </p>
+
+    <div style="margin-top:22px">
+      <div class="section-title">Accounts</div>
+      <div class="queue" id="companyQueue"></div>
+    </div>
+  </section>
+
+  
+  <section class="view" data-section="sites">
+    <h1>All sites</h1>
+    <p class="lead">
+      Every warehouse running on the platform, read from each site's live slot map.
+      This view is read-only — stock is only ever placed or removed on site.
+    </p>
+
+    <div style="margin-top:22px" id="siteTable"></div>
+  </section>
+
+</main>
+
+<script src="js/floor.js"></script>
+<script src="js/platform.js"></script>
+</body>
+</html>'
