@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Choose a warehouse — OptiVault</title>
+<meta name="description" content="Pick the warehouse you are assigned to and enter its passcode.">
+<link rel="stylesheet" href="css/floor.css">
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="sq">O</div>
+    <div>
+      <b id="companyLabel">Company</b>
+      <span>SUPERVISOR ACCESS · SELECT A SITE</span>
+    </div>
+  </div>
+
+  <div class="hright">
+    <span class="live">● 3 SITES ONLINE</span>
+    <span class="avatar" id="whoAmI" title="Sign out">—</span>
+  </div>
+</header>
+
+<div class="demo-banner" id="demoBanner" hidden>
+  Not signed in — showing the site list in demo mode.
+  <a href="signin.html">Sign in as a supervisor</a> to work against your own session.
+</div>
+
+<main>
+
+  <div class="hdr-row">
+    <div>
+      <h1>Choose your warehouse</h1>
+      <div class="sub">Your company account opens this list. Each site needs its own passcode before the floor unlocks.</div>
+    </div>
+  </div>
+
+  <div class="site-grid" id="siteGrid"></div>
+
+  <div class="site-help">
+    Passcodes are issued per site, so a supervisor assigned to one warehouse cannot open another.
+  </div>
+
+</main>
+
+
+<!-- ================= PASSCODE MODAL ================= -->
+<div class="modal" id="passModal">
+  <div class="modal-panel pass-panel">
+
+    <div class="modal-head">
+      <div>
+        <h3 id="passSite">Warehouse</h3>
+        <div class="m-sub" id="passCity">—</div>
+      </div>
+      <button class="btn" data-close type="button">Cancel</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="pass-intro">Enter the passcode issued for this site to open its floor.</p>
+
+      <div class="pass-error" id="passError" hidden></div>
+
+      <form id="passForm" autocomplete="off" novalidate>
+        <div class="field">WAREHOUSE PASSCODE</div>
+        <input id="siteCode"
+               class="pass-input"
+               type="text"
+               inputmode="numeric"
+               pattern="[0-9]*"
+               autocomplete="off"
+               autocorrect="off"
+               autocapitalize="off"
+               spellcheck="false"
+               name="site-entry-code"
+               data-form-type="other"
+               placeholder="••••">
+
+        <button class="btn dark" id="passSubmit" type="submit" style="width:100%">
+          UNLOCK FLOOR
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
+<script src="js/floor.js"></script>
+<script src="js/select.js"></script>
+</body>
+</html>
