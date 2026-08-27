@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Warehouse Floor — NexVault</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/floor.css">
+<script>
+  (function() {
+    var saved = localStorage.getItem("nexvault-theme") || localStorage.getItem("optivault-theme") || localStorage.getItem("slotwise-theme");
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var theme = saved || (prefersDark ? "dark" : "dark");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="sq">N</div>
+    <div>
+      <b id="whName">Warehouse</b>
+      <span id="whMeta">—</span>
+    </div>
+  </div>
+  <input id="floorSearch" placeholder="Search slot code, SKU, rack or zone…" aria-label="Search the floor">
+  <div class="hright">
+    <span class="live">● FLOOR LIVE</span>
+    <button class="btn ghost tiny" id="changeWarehouse" title="Lock this site and pick another">⇄ Change site</button>
+    <button class="btn ghost tiny" id="resetFloor" title="Rebuild this warehouse from opening stock">↺ Reset</button>
+    <span class="avatar" id="whoAmI" title="Sign out">—</span>
+  </div>
+</header>
+
+<nav class="mainnav">
+  <div class="nav-inner">
+    <button class="navlink on" type="button" data-pane="floor">
+      <span class="nav-ico">▦</span> FLOOR
+      <span class="nav-badge" id="navPendingCount" hidden>0</span>
+    </button>
+    <button class="navlink" type="button" data-pane="stock">
+      <span class="nav-ico">⇅</span> STOCK IN / OUT
+    </button>
+    <button class="navlink" type="button" data-pane="optimizer">
+      <span class="nav-ico">◈</span> OPTIMIZER
+      <span class="nav-badge" id="navFlagCount" hidden>0</span>
+    </button>
+    <button class="navlink" type="button" data-pane="reports">
+      <span class="nav-ico">▤</span> REPORTS
+    </button>
+  </div>
+</nav>
+
+<div class="demo-banner" id="demoBanner" hidden>
+  Not signed in — showing the floor in demo mode.
+  <a href="signin.html">Sign in as a supervisor</a> to work against your own session.
+</div>
+
+<main>
+
+  
+  <div class="stats">
+    <div class="stat">
+      <div class="l">CAPACITY USED</div>
+      <b id="statCapacity">—</b>
+      <small id="statCapacitySub">—</small>
+    </div>
+    <div class="stat">
+      <div class="l">EMPTY SLOTS</div>
+      <b id="statFree">—</b>
+      <small id="statFreeSub">—</small>
+    </div>
+    <div class="stat">
+      <div class="l">WAITING FOR SPACE</div>
+      <b id="statPending">—</b>
+      <small id="statPendingSub">—</small>
+    </div>
+    <div class="stat" id="statAlertsCard">
+      <div class="l">OPTIMIZER FLAGS</div>
+      <b id="statAlerts">—</b>
+      <small id="statAlertsSub">—</small>
+    </div>
+  </div>
+
+  
+  <section class="pane on" data-pane-body="floor">
+    <div class="pane-head">
+      <div>
+        <h1>Warehouse Floor</h1>
+        <div class="sub" id="floorTitleMeta">Rack-by-rack occupancy.</div>
+      </div>
+    </div>
+
+    <div class="tabs">
+      <button class="tab on" data-filter="all">ALL RACKS</button>
+      <button class="tab" data-filter="near-full">NEAR-FULL</button>
+      <button class="tab" data-filter="has-space">HAS SPACE</button>
+      <div class="legend">
+        <span><i style="background:var(--redlt)"></i>under 40%</span>
+        <span><i style="background:var(--mid)"></i>40–85%</span>
+        <span><i style="background:var(--red)"></i>over 85%</span>
+      </div>
+    </div>
+
+    <div id="racks"></div>
+
+    <div class="pending-panel" id="pendingPanel" hidden>
+      <h4>Waiting for space</h4>
+      <div class="hint">These units did not fit anywhere. Remove stock to free a slot and they are placed automatically.</div>
+      <div id="pendingList"></div>
+    </div>
+  </section>
+
+  
+  <section class="pane" data-pane-body="stock">
+    <div class="pane-head">
+      <div>
+        <h1>Stock In / Out</h1>
+        <div class="sub">Book stock in or out. Every movement runs through the allocation engine, and the report below shows the slot it chose and why.</div>
+      </div>
+    </div>
+
+    <div class="stock-grid">
+
+      <div class="card">
+        <h4>Stock in — putaway</h4>
+        <p class="card-note">The engine works out the slot. You do not pick one.</p>
+        <form id="addForm" novalidate>
+          <div class="field">SKU</div>
+          <input id="inSku" placeholder="SKU-88213" required>
+
+          <div class="field">DESCRIPTION</div>
+          <input id="inName" placeholder="Pallet wrap">
+
+          <div class="field">DIMENSIONS L × W × H (CM)</div>
+          <div class="trio">
+            <input id="inL" type="number" placeholder="60" min="1">
+            <input id="inW" type="number" placeholder="40" min="1">
+            <input id="inH" type="number" placeholder="35" min="1">
+          </div>
+
+          <div class="duo">
+            <div>
+              <div class="field">WEIGHT (KG)</div>
+              <input id="inWeight" type="number" placeholder="14" min="1">
+            </div>
+            <div>
+              <div class="field">QUANTITY</div>
+              <input id="inQty" type="number" value="1" min="1" max="40">
+            </div>
+          </div>
+
+          <div class="field">HOW OFTEN IS IT PICKED</div>
+          <select id="inVelocity">
+            <option value="fast">Fast mover — pick near the dock</option>
+            <option value="medium" selected>Medium — mid floor</option>
+            <option value="slow">Slow mover — store deep</option>
+          </select>
+
+          <label class="check">
+            <input type="checkbox" id="inFragile">
+            <span>Fragile — needs a slot of its own</span>
+          </label>
+
+          <button type="submit" class="btn dark wide">Allocate slot</button>
+        </form>
+      </div>
+
+      <div class="card">
+        <h4>Stock out — pick</h4>
+        <p class="card-note">Freeing a slot makes the engine retry anything queued.</p>
+        <form id="removeForm" novalidate>
+          <div class="duo">
+            <div>
+              <div class="field">SLOT</div>
+              <input id="outSlot" placeholder="A-01-1">
+            </div>
+            <div>
+              <div class="field">QUANTITY</div>
+              <input id="outQty" type="number" value="1" min="1">
+            </div>
+          </div>
+
+          <div class="field">SKU</div>
+          <input id="outSku" placeholder="SKU-88213">
+
+          <button type="submit" class="btn wide">Remove and reallocate</button>
+        </form>
+
+        <div class="card-tip">
+          <b>Where do I find a slot code?</b>
+          <span>Open the FLOOR section — every occupied row shows its slot code and the SKUs inside it.</span>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="result" id="resultBox" hidden></div>
+
+    <div class="card report-card">
+      <div class="alloc-idle" id="allocIdle">
+        <b>No movement booked yet in this session.</b>
+        <span>Book stock in or out above. The engine will then show every unit it placed, the slot it chose, and the rule that chose it.</span>
+      </div>
+      <div id="allocReport" hidden></div>
+    </div>
+  </section>
+
+  
+  <section class="pane" data-pane-body="optimizer">
+    <div class="pane-head">
+      <div>
+        <h1>Optimizer</h1>
+        <div class="sub">Recalculated from the live slot map every time stock moves. Nothing here is hard-coded.</div>
+      </div>
+    </div>
+
+    <div class="opt-top">
+      <div class="opt-count">
+        <div class="num-big" id="suggestionCount">0</div>
+        <small>OPEN SUGGESTIONS</small>
+        <div class="opt-break" id="suggestionBreakdown">—</div>
+      </div>
+      <div class="opt-checks">
+        <h4>The four checks it runs</h4>
+        <div class="check-row"><b>Rack pressure</b><span>Any rack over 90% full, plus the nearest rack that still has room to send putaway to instead.</span></div>
+        <div class="check-row"><b>Overfill</b><span>Any slot over 92% full, grouped per rack so one tight rack is one flag rather than eight.</span></div>
+        <div class="check-row"><b>Waiting units</b><span>Stock the packer could not place, which will be retried the moment a slot frees up.</span></div>
+        <div class="check-row"><b>Travel time</b><span>Fast movers sitting deep in the building while a slot nearer the dock would accept them.</span></div>
+      </div>
+    </div>
+
+    <div id="suggestions"></div>
+  </section>
+
+  
+  <section class="pane" data-pane-body="reports">
+    <div class="pane-head">
+      <div>
+        <h1>Reports</h1>
+        <div class="sub">Zone-level utilization across the site, and the activity trail for this warehouse.</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h4>Zone utilization</h4>
+      <p class="card-note">Every zone on the site, ordered by distance from the dock. This is the macro read on top of the slot-by-slot detail on the FLOOR section.</p>
+      <div id="zones"></div>
+    </div>
+
+    <div class="reports-grid">
+      <div class="card">
+        <h4>Recent activity</h4>
+        <p class="card-note">Every allocation, removal and reallocation on this floor.</p>
+        <div id="activity"></div>
+      </div>
+
+      <div class="card dark">
+        <h4>3D / SPATIAL VIEW</h4>
+        <b>Warehouse in 3D</b>
+        <small>Every rack drawn from the same slot data as the list, ordered by distance from the dock.</small>
+        <div class="coming-soon-wrap">
+          <div class="coming-soon-blur">
+            <div class="viz" id="miniViz"></div>
+            <button class="btn wide" id="open3d" disabled>↗️ Launch 3D view</button>
+          </div>
+          <div class="coming-soon-tag">Coming soon</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<div class="modal" id="modal3d">
+  <div class="modal-panel">
+    <div class="modal-head">
+      <div>
+        <h3>Warehouse in 3D</h3>
+        <div class="m-sub">Racks left to right by distance from the dock. Bar height inside each slot is its real fill.</div>
+      </div>
+      <button class="btn" data-close>Close</button>
+    </div>
+    <div class="stage-wrap">
+      <div class="stage" id="stage3d"></div>
+      <div class="rack-key" id="rackKey"></div>
+      <div class="dock-note">RACKS ORDERED BY DISTANCE FROM THE DOCK · FAST MOVERS ARE ALLOCATED NEAREST</div>
+    </div>
+    <div class="modal-body">
+      <div class="stage-legend">
+        <span><i style="background:var(--redlt)"></i>under 40%</span>
+        <span><i style="background:var(--mid)"></i>40–85%</span>
+        <span><i style="background:var(--red)"></i>over 85%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/floor.js"></script>
+</body>
+</html>
