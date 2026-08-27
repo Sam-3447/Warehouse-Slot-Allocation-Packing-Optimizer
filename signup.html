@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Register Your Company — NexVault</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Register your company to run warehouse slot allocation and packing optimization on NexVault.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="css/theme.css">
+<link rel="stylesheet" href="css/sigin.css">
+<script>
+  (function() {
+    var saved = localStorage.getItem("nexvault-theme") || localStorage.getItem("optivault-theme") || localStorage.getItem("slotwise-theme");
+    var prefersDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var theme = saved || (prefersDark ? "dark" : "dark");
+    document.documentElement.setAttribute("data-theme", theme);
+  })();
+</script>
+</head>
+<body>
+
+<div class="page-grid" aria-hidden="true"></div>
+
+<header class="signin-header">
+  <a href="index.html" class="logo">NEX<span>VAULT</span></a>
+  <div class="header-status">
+    <span class="status-item"><span class="dot"></span> ACCEPTING REGISTRATIONS</span>
+    <span class="sep">·</span>
+    <span class="status-item">REVIEWED IN 2 WORKING DAYS</span>
+    <span class="sep">·</span>
+    <a href="index.html" class="back-link">BACK TO SITE</a>
+  </div>
+</header>
+
+<main class="signin-main">
+  <div class="signin-inner">
+
+    
+    <section class="pitch reveal">
+      <h1>Register once.<br>Run every warehouse<br>on <span class="accent">one</span> engine.</h1>
+      <p class="sub">Tell us about your company and the warehouses you want us to manage. We review each registration before opening the workspace.</p>
+
+      <div class="zone-panel">
+        <div class="zone-row">
+          <span class="zone-label">SAMPLE ZONE <span class="dash">—</span> AFTER ALLOCATION</span>
+          <span class="zone-label occ">OCCUPANCY <strong>72%</strong></span>
+        </div>
+
+        <div class="slot-cards" id="slotCards">
+          <div class="scard" data-target="92"><div class="scard-label">A01</div><div class="scard-pct">0%</div><div class="scard-bar"><i></i></div></div>
+          <div class="scard" data-target="74"><div class="scard-label">A02</div><div class="scard-pct">0%</div><div class="scard-bar"><i></i></div></div>
+          <div class="scard" data-target="81"><div class="scard-label">A03</div><div class="scard-pct">0%</div><div class="scard-bar"><i></i></div></div>
+          <div class="scard" data-target="43"><div class="scard-label">A04</div><div class="scard-pct">0%</div><div class="scard-bar"><i></i></div></div>
+          <div class="scard" data-target="67"><div class="scard-label">B01</div><div class="scard-pct">0%</div><div class="scard-bar"><i></i></div></div>
+          <div class="scard" data-target="88"><div class="scard-label">B02</div><div class="scard-pct">0%</div><div class="scard-bar"><i></i></div></div>
+          <div class="scard" data-target="51"><div class="scard-label">B03</div><div class="scard-pct">0%</div><div class="scard-bar"><i></i></div></div>
+          <div class="scard" data-target="72"><div class="scard-label">B04</div><div class="scard-pct">0%</div><div class="scard-bar"><i></i></div></div>
+        </div>
+
+        <div class="zone-foot">
+          <span>48 PALLET POSITIONS</span>
+          <span>AVG PICK PATH <strong>61 M</strong></span>
+        </div>
+      </div>
+    </section>
+
+    
+    <section class="auth-card signup-card reveal">
+      <div class="eyebrow">COMPANY REGISTRATION</div>
+      <h2>Register your company</h2>
+      <p class="sub">One account per company. Your supervisors sign in with this same email, then unlock their own warehouse with its passcode.</p>
+
+      <div class="approval-note">
+        <span class="mark"></span>
+        <span>Registrations are reviewed before the workspace opens, because we set up your rack profile and slot map before allocation can run.</span>
+      </div>
+
+      <div class="form-error" id="formError" role="alert"></div>
+
+      <form id="signupForm" novalidate>
+
+        <label class="field-label" for="companyName">COMPANY NAME</label>
+        <input type="text" id="companyName" placeholder="Enter the company name" autocomplete="organization" required>
+
+        <label class="field-label" for="contactName">CONTACT PERSON</label>
+        <input type="text" id="contactName" placeholder="Full name" autocomplete="name" required>
+
+        <label class="field-label" for="workEmail">COMPANY EMAIL</label>
+        <input type="email" id="workEmail" placeholder="Enter the email" autocomplete="email" required>
+        <div class="field-hint">THIS BECOMES THE SINGLE SIGN-IN FOR YOUR COMPANY</div>
+
+        <label class="field-label" for="warehouseCount">WAREHOUSES TO MANAGE</label>
+        <input type="number" id="warehouseCount" placeholder="3" min="1" max="99" required>
+
+        <div class="field-pair">
+          <div>
+            <label class="field-label" for="newPassword">PASSWORD</label>
+            <div class="pw-wrap">
+              <input type="password" id="newPassword" placeholder="••••••••••" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-bwignore required>
+              <button type="button" class="pw-toggle" data-target="newPassword" aria-label="Show password"></button>
+            </div>
+          </div>
+          <div>
+            <label class="field-label" for="confirmPassword">CONFIRM PASSWORD</label>
+            <div class="pw-wrap">
+              <input type="password" id="confirmPassword" placeholder="••••••••••" autocomplete="new-password" data-lpignore="true" data-1p-ignore data-bwignore required>
+              <button type="button" class="pw-toggle" data-target="confirmPassword" aria-label="Show password"></button>
+            </div>
+          </div>
+        </div>
+
+        <button type="submit" class="enter-btn">
+          <span class="btn-text">SEND REGISTRATION</span>
+          <span class="btn-arrow">→</span>
+        </button>
+
+        <div class="form-row form-row-bottom">
+          <span class="sub small">Already registered?</span>
+          <a href="signin.html" class="register-link">SIGN IN</a>
+        </div>
+
+      </form>
+
+      <div class="secure-note"><span class="mark"></span> SECURE ORGANIZATIONAL ACCESS</div>
+    </section>
+
+  </div>
+</main>
+
+<div class="success-screen" id="successScreen">
+
+  <div class="success-boxes" id="successBoxes" aria-hidden="true"></div>
+
+  <div class="success-message" id="successMessage">
+    <div class="success-eyebrow">Registration received</div>
+
+    <h2 class="success-title">
+      We'll get in touch<br>with you <span class="accent">soon</span>.
+    </h2>
+
+    <p class="success-sub">
+      Thanks, <strong id="successCompany">your company</strong>. Our team will review your
+      warehouses and set up your rack profile before opening the workspace.
+      You'll hear from us at the email you registered.
+    </p>
+
+    <div class="success-actions">
+      <a href="index.html" class="success-btn solid">BACK TO SITE</a>
+      <a href="signin.html" class="success-btn ghost">GO TO SIGN IN</a>
+    </div>
+
+    <p class="success-ref">
+      REFERENCE <code id="successRef">NV-2026-0000</code>
+    </p>
+  </div>
+
+</div>
+
+<script src="js/sigin.js"></script>
+</body>
+</html>
