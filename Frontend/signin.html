@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Sign In — NexVault</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Sign in to your NexVault workspace to manage warehouse allocation and packing.">
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/sigin.css">
+</head>
+
+<body>
+
+  <div class="page-grid" aria-hidden="true"></div>
+
+  <header class="signin-header">
+    <a href="index.html" class="logo">NEX<span>VAULT</span></a>
+    <div class="header-status">
+      <span class="status-item"><span class="dot"></span> SYSTEM READY</span>
+      <span class="sep">·</span>
+      <span class="status-item">AWAITING ACCESS</span>
+      <span class="sep">·</span>
+      <a href="index.html" class="back-link">BACK TO SITE</a>
+    </div>
+  </header>
+
+  <main class="signin-main">
+    <div class="signin-inner">
+
+      <!-- ============ LEFT: pitch + live zone panel ============ -->
+      <section class="pitch reveal">
+        <h1>Your warehouse.<br>Your inventory.<br>One <span class="accent">optimized</span> system.</h1>
+        <p class="sub">Sign in to manage your company's warehouses, inventory and storage optimization from a single
+          allocation engine.</p>
+
+        <div class="zone-panel">
+          <div class="zone-row">
+            <span class="zone-label">ZONE A <span class="dash">—</span> UTILIZATION</span>
+            <span class="zone-label occ">OCCUPANCY <strong id="occValue">72%</strong></span>
+          </div>
+
+          <div class="slot-cards" id="slotCards">
+            <div class="scard" data-target="92">
+              <div class="scard-label">A01</div>
+              <div class="scard-pct">0%</div>
+              <div class="scard-bar"><i></i></div>
+            </div>
+            <div class="scard" data-target="74">
+              <div class="scard-label">A02</div>
+              <div class="scard-pct">0%</div>
+              <div class="scard-bar"><i></i></div>
+            </div>
+            <div class="scard" data-target="81">
+              <div class="scard-label">A03</div>
+              <div class="scard-pct">0%</div>
+              <div class="scard-bar"><i></i></div>
+            </div>
+            <div class="scard" data-target="43">
+              <div class="scard-label">A04</div>
+              <div class="scard-pct">0%</div>
+              <div class="scard-bar"><i></i></div>
+            </div>
+            <div class="scard" data-target="67">
+              <div class="scard-label">B01</div>
+              <div class="scard-pct">0%</div>
+              <div class="scard-bar"><i></i></div>
+            </div>
+            <div class="scard" data-target="88">
+              <div class="scard-label">B02</div>
+              <div class="scard-pct">0%</div>
+              <div class="scard-bar"><i></i></div>
+            </div>
+            <div class="scard" data-target="51">
+              <div class="scard-label">B03</div>
+              <div class="scard-pct">0%</div>
+              <div class="scard-bar"><i></i></div>
+            </div>
+            <div class="scard" data-target="72">
+              <div class="scard-label">B04</div>
+              <div class="scard-pct">0%</div>
+              <div class="scard-bar"><i></i></div>
+            </div>
+          </div>
+
+          <div class="zone-foot">
+            <span>48 PALLET POSITIONS</span>
+            <span>AVG PICK PATH <strong>61 M</strong></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ RIGHT: sign-in card ============ -->
+      <section class="auth-card reveal">
+        <div class="eyebrow">COMPANY ACCESS</div>
+        <h2>Sign in to NexVault</h2>
+        <p class="sub">Use the organization email registered to your workspace.</p>
+
+        <!-- In-Page Interactive Role Switcher (1-click toggle between roles) -->
+        <div class="role-switcher-card">
+          <div class="role-switcher-head">
+            <span class="rsw-title">ACCESS PORTAL ROLE</span>
+            <span class="rsw-badge" id="roleActiveBadge">COMPANY ADMIN</span>
+          </div>
+          <div class="role-pills" id="rolePills" role="tablist">
+            <button type="button" class="role-pill active" data-role-btn="company-admin"
+              title="Multi-facility oversight and reporting">
+              <span class="rp-ico">🏢</span>
+              <span>Company Admin</span>
+            </button>
+            <button type="button" class="role-pill" data-role-btn="supervisor"
+              title="Access 2D/3D floor allocation and inventory">
+              <span class="rp-ico">👷</span>
+              <span>Supervisor</span>
+            </button>
+            <button type="button" class="role-pill" data-role-btn="platform-admin"
+              title="Platform approvals and company accounts">
+              <span class="rp-ico">🛡️</span>
+              <span>Platform Admin</span>
+            </button>
+          </div>
+          <div class="role-dest-hint" id="roleDestHint">
+            <span class="hint-bullet">●</span> <span id="roleDestText">Redirects to company-wide overview &amp; facility
+              management.</span>
+          </div>
+        </div>
+
+        <div class="form-error" id="formError" role="alert"></div>
+
+        <!-- Google Sign-In Option -->
+        <div class="google-auth-box" id="googleAuthBox" style="margin-bottom: 20px;">
+          <script>
+            (function () {
+              try {
+                var params = new URLSearchParams(window.location.search);
+                var role = params.get('role') || localStorage.getItem('nexvault-role') || localStorage.getItem('optivault-role');
+                if (role === 'platform-admin') {
+                  document.getElementById('googleAuthBox').style.display = 'none';
+                }
+              } catch (e) { }
+            })();
+          </script>
+          <div id="googleBtnHost" style="display: flex; justify-content: center; min-height: 44px;"></div>
+          <div class="auth-divider"
+            style="display: flex; align-items: center; text-align: center; margin: 18px 0 10px; color: #8e877e; font-size: 11px; font-weight: 700; letter-spacing: 0.1em;">
+            <span style="flex: 1; border-bottom: 1px solid #e2ddd5;"></span>
+            <span style="padding: 0 10px;">OR WITH EMAIL & PASSWORD</span>
+            <span style="flex: 1; border-bottom: 1px solid #e2ddd5;"></span>
+          </div>
+        </div>
+
+        <form id="signinForm" novalidate>
+          <label class="field-label" for="orgEmail">ORGANIZATION EMAIL</label>
+          <input type="email" id="orgEmail" placeholder="Enter the email" autocomplete="username" required>
+
+          <label class="field-label" for="orgPassword">PASSWORD</label>
+          <div class="pw-wrap">
+            <input type="password" id="orgPassword" placeholder="••••••••••" autocomplete="current-password"
+              data-lpignore="true" data-1p-ignore data-bwignore required>
+            <button type="button" class="pw-toggle" data-target="orgPassword" aria-label="Show password"></button>
+          </div>
+          <div class="field-hint">ENTER YOUR WORKSPACE PASSWORD</div>
+
+          <div class="form-row">
+            <label class="remember">
+              <input type="checkbox" id="rememberDevice">
+              <span>Remember this device</span>
+            </label>
+            <a href="#" class="forgot-link">FORGOT PASSWORD?</a>
+          </div>
+
+          <button type="submit" class="enter-btn">
+            <span class="btn-text">ENTER WORKSPACE</span>
+            <span class="btn-arrow">→</span>
+          </button>
+
+          <div class="form-row form-row-bottom">
+            <span class="sub small">No workspace yet?</span>
+            <a href="signup.html" class="register-link">REGISTER COMPANY</a>
+          </div>
+        </form>
+
+
+        <div class="secure-note"><span class="mark"></span> SECURE ORGANIZATIONAL ACCESS</div>
+      </section>
+
+    </div>
+  </main>
+
+  <script src="js/api-config.js"></script>
+  <script src="js/sigin.js"></script>
+</body>
+
+</html>
