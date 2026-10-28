@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NexVault — Enterprise Facility Ledger</title>
+<meta name="description" content="Company-wide warehouse ledger and multi-facility inventory allocation oversight.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body>
+
+<div class="page-grid" aria-hidden="true"></div>
+
+<!-- ================= TOP B2B APP BAR ================= -->
+<header class="b2b-header">
+  <div class="header-inner">
+    
+    <!-- Brand & System Status -->
+    <div class="brand-block">
+      <a href="index.html" class="b2b-brand">
+        <span class="brand-square">NV</span>
+        <span class="brand-name">NEX<span>VAULT</span></span>
+        <span class="brand-divider">/</span>
+        <span class="brand-sub">ENTERPRISE LEDGER</span>
+      </a>
+      <div class="sys-badge">
+        <span class="live-dot"></span>
+        <span>TELEMETRY LIVE</span>
+      </div>
+    </div>
+
+    <!-- Navigation Segmented Tabs (Clean SVG Icons, No Emojis) -->
+    <nav class="b2b-nav" role="tablist">
+      <button class="b2b-nav-item active" data-view="overview" type="button" role="tab">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        <span>FACILITY OVERSIGHT</span>
+      </button>
+      <button class="b2b-nav-item" data-view="requests" type="button" role="tab">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        <span>PROVISIONING QUEUE</span>
+        <span class="count" id="reqCount" hidden>0</span>
+      </button>
+    </nav>
+
+    <!-- Organization Context & User Capsule -->
+    <div class="b2b-user-area">
+      <div class="org-meta">
+        <span class="org-label">ORGANIZATION</span>
+        <strong class="org-name" id="companyName">Company</strong>
+      </div>
+      <div class="user-pill">
+        <div class="user-avatar" id="whoAmI">—</div>
+        <div class="user-details">
+          <span class="user-role-label">COMPANY ADMIN</span>
+          <span class="user-status-text">Authorized Portal</span>
+        </div>
+      </div>
+      <button type="button" class="b2b-signout-btn" id="signOutBtn" title="Sign out of enterprise ledger">
+        <span>EXIT</span>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- Demo Session Banner (hidden when signed in) -->
+<div class="demo-banner" id="demoBanner" hidden>
+  <div class="demo-banner-content">
+    <span class="demo-tag">DEMO PREVIEW</span>
+    <span>Viewing corporate ledger in unauthenticated demo session.</span>
+    <a href="signin.html">Sign in with Organization Credentials →</a>
+  </div>
+</div>
+
+<!-- ================= MAIN WORKSPACE ================= -->
+<main class="ledger-main">
+
+  <!-- ================= 01. FACILITY OVERVIEW ================= -->
+  <section class="view on" data-section="overview">
+
+    <!-- Section Titlebar -->
+    <div class="ledger-titlebar">
+      <div class="title-left">
+        <div class="section-tag">
+          <span class="tag-code">LEDGER-01</span>
+          <span>MULTI-FACILITY OPERATIONS</span>
+        </div>
+        <h1>Warehouse Oversight</h1>
+        <p class="ledger-desc" id="ledgerSummary">Synchronizing multi-site storage allocation and live occupancy figures…</p>
+      </div>
+      <div class="title-right">
+        <button class="b2b-btn b2b-btn-primary" data-open-request type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Provision New Warehouse</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Operational KPI Matrix (5 metrics) -->
+    <div class="kpi-grid">
+
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-label">ACTIVE SITES</span>
+          <span class="kpi-badge neutral">OPERATIONAL</span>
+        </div>
+        <div class="kpi-metric"><b id="statSites">—</b></div>
+        <div class="kpi-foot">
+          <span class="kpi-sub">Facilities under management</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-label">PROVISIONING QUEUE</span>
+          <span class="kpi-badge amber">IN REVIEW</span>
+        </div>
+        <div class="kpi-metric"><b id="statRequests">—</b></div>
+        <div class="kpi-foot">
+          <span class="kpi-sub">Awaiting platform approval</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-label">AVG UTILIZATION</span>
+          <span class="kpi-badge terracotta">VOLUMETRIC</span>
+        </div>
+        <div class="kpi-metric"><b id="statUtil">—</b></div>
+        <div class="kpi-foot">
+          <span class="kpi-sub">Average fleet occupancy</span>
+        </div>
+      </div>
+
+      <div class="kpi-card">
+        <div class="kpi-head">
+          <span class="kpi-label">TOTAL CAPACITY</span>
+          <span class="kpi-badge neutral">SLOTS</span>
+        </div>
+        <div class="kpi-metric"><b id="statSlots">—</b></div>
+        <div class="kpi-foot">
+          <span class="kpi-sub">Total managed slot positions</span>
+        </div>
+      </div>
+
+      <div class="kpi-card" id="statWaitingCard">
+        <div class="kpi-head">
+          <span class="kpi-label">STAGING QUEUE</span>
+          <span class="kpi-badge warn">DOCK PENDING</span>
+        </div>
+        <div class="kpi-metric"><b id="statWaiting">—</b></div>
+        <div class="kpi-foot">
+          <span class="kpi-sub">Pallets awaiting rack slot</span>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Ledger Filter Toolbar -->
+    <div class="b2b-toolbar">
+      <div class="toolbar-search">
+        <svg class="search-ico" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" id="siteSearchInput" placeholder="Filter by facility name, region, or warehouse code (e.g. WH-01)…" autocomplete="off">
+      </div>
+      <div class="toolbar-filters">
+        <span class="filter-label">FILTER:</span>
+        <div class="filter-group">
+          <button class="filter-pill on" data-filter="all" type="button">ALL SITES</button>
+          <button class="filter-pill" data-filter="busy" type="button">OVER 65% FULL</button>
+          <button class="filter-pill" data-filter="roomy" type="button">UNDER 40% FULL</button>
+        </div>
+      </div>
+      <div class="toolbar-telemetry">
+        <span class="telemetry-dot"></span>
+        <span id="liveNote">Figures synchronized live from floor activity</span>
+      </div>
+    </div>
+
+    <!-- Facility Cards Grid -->
+    <div class="facilities-grid" id="siteGrid"></div>
+
+  </section>
+
+
+  <!-- ================= 02. PROVISIONING QUEUE ================= -->
+  <section class="view" data-section="requests">
+
+    <div class="ledger-titlebar">
+      <div class="title-left">
+        <div class="section-tag">
+          <span class="tag-code">QUEUE-02</span>
+          <span>CAPACITY REQUISITIONS PIPELINE</span>
+        </div>
+        <h1>Provisioning Queue</h1>
+        <p class="ledger-desc">Facility additions and decommissioning requests require platform engineering clearance before warehouse slot maps and supervisor credentials go live.</p>
+      </div>
+      <div class="title-right">
+        <button class="b2b-btn b2b-btn-primary" data-open-request type="button">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <span>Provision New Warehouse</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Request Filter Tabs -->
+    <div class="req-toolbar">
+      <div class="filter-group">
+        <button class="filter-pill on" data-reqfilter="open" type="button">
+          <span>FACILITY ADDITIONS</span>
+        </button>
+        <button class="filter-pill" data-reqfilter="delete" type="button">
+          <span>DECOMMISSIONING REQUESTS</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="req-container" id="requestList"></div>
+
+  </section>
+
+</main>
+
+<!-- ================= INDUSTRIAL FOOTER ================= -->
+<footer class="b2b-footer">
+  <div class="footer-inner">
+    <div class="foot-col">
+      <div class="foot-brand">OPTI<span>VAULT</span> ENTERPRISE WMS</div>
+      <div class="foot-meta">AUDITED VOLUMETRIC ALLOCATION ENGINE · ENTERPRISE OPERATIONS LEDGER</div>
+    </div>
+    <div class="foot-col foot-right">
+      <span>STOCK PLACEMENTS AND DISPATCHES ARE PROCESSED ON-SITE BY CERTIFIED SUPERVISORS.</span>
+      <span class="view-only-tag">LEDGER ACCESS: STRICTLY READ-ONLY</span>
+    </div>
+  </div>
+</footer>
+
+
+<!-- ================= PROVISION WAREHOUSE MODAL ================= -->
+<div class="b2b-modal" id="reqModal">
+  <div class="b2b-modal-dialog">
+
+    <div class="modal-header">
+      <div>
+        <div class="dialog-tag">REQUISITION FORM · RFC-2026</div>
+        <h3>Submit Warehouse Requisition</h3>
+        <p class="dialog-sub">Transmitted to the NexVault Platform team. Facility rack models and supervisor passcodes will be provisioned upon clearance.</p>
+      </div>
+      <button class="dialog-close" data-close type="button" aria-label="Close dialog">✕</button>
+    </div>
+
+    <div class="modal-content">
+
+      <div id="reqBody">
+
+        <div class="form-error" id="reqError" hidden></div>
+
+        <form id="reqForm" novalidate>
+
+          <div class="form-row">
+            <label class="field-title" for="reqCity">PRIMARY CITY / HUB LOCATION</label>
+            <input id="reqCity" class="b2b-input" type="text" placeholder="e.g. Ludhiana Logistics Center" required>
+          </div>
+
+          <div class="form-row">
+            <label class="field-title" for="reqAddress">FACILITY POSTAL ADDRESS / INDUSTRIAL ZONE</label>
+            <input id="reqAddress" class="b2b-input" type="text" placeholder="e.g. Focal Point Phase 5, NH-44 Corridor" required>
+          </div>
+
+          <div class="form-duo">
+            <div>
+              <label class="field-title" for="reqSlots">TARGET SLOTS REQUIRED</label>
+              <input id="reqSlots" class="b2b-input" type="number" min="8" placeholder="e.g. 400" required>
+            </div>
+            <div>
+              <label class="field-title" for="reqContact">AUTHORIZING SITE MANAGER</label>
+              <input id="reqContact" class="b2b-input" type="text" placeholder="Full name of site lead" required>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="field-title" for="reqNote">LOGISTICS PROFILE &amp; CATEGORY SPECIFICATIONS (OPTIONAL)</label>
+            <textarea id="reqNote" class="b2b-textarea" placeholder="Storage categories, expected pallet throughput (fast/medium/slow velocity), hazardous materials, cold chain, or overhang requirements…"></textarea>
+          </div>
+
+          <button class="b2b-btn b2b-btn-primary btn-block" type="submit">
+            <span>SUBMIT CAPACITY REQUISITION</span>
+            <span>→</span>
+          </button>
+
+          <div class="b2b-compliance-note">
+            <span class="note-bullet">§</span>
+            <span>The Platform Engineering team validates volumetric limits, rack structural models, and 2D CAD coordinate mappings before supervisor entry is authorized.</span>
+          </div>
+
+        </form>
+      </div>
+
+      <div class="sent-panel" id="reqSent" hidden>
+        <div class="sent-badge">✓</div>
+        <h4>Requisition Successfully Transmitted</h4>
+        <p>The platform administration queue has received your warehouse proposal. Track verification progress under the Provisioning Queue.</p>
+        <div class="tracking-chip">
+          <span>REQUISITION REFERENCE:</span>
+          <b id="sentRef">—</b>
+        </div>
+        <button class="b2b-btn b2b-btn-secondary btn-block" data-close type="button">CLOSE WINDOW</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ================= DECOMMISSION WAREHOUSE MODAL ================= -->
+<div class="b2b-modal" id="deleteModal">
+  <div class="b2b-modal-dialog dialog-compact">
+    <div class="modal-header">
+      <div>
+        <div class="dialog-tag tag-danger">DECOMMISSIONING REQUISITION</div>
+        <h3>Request Site Removal</h3>
+        <p class="dialog-sub">Transmitted to the platform administrative queue. The facility remains accessible until final signoff.</p>
+      </div>
+      <button class="dialog-close" data-close type="button" aria-label="Close dialog">✕</button>
+    </div>
+    <div class="modal-content">
+      <div class="decommission-warning">
+        <span class="warn-symbol">⚠️</span>
+        <div>
+          Confirm submitting a decommissioning proposal for <strong id="deleteCity">this facility</strong>? Outstanding slot balances should be cleared prior to decommissioning.
+        </div>
+      </div>
+      <div class="dialog-btn-row">
+        <button class="b2b-btn b2b-btn-secondary" data-close type="button" style="flex:1">CANCEL</button>
+        <button class="b2b-btn b2b-btn-danger" id="deleteConfirm" type="button" style="flex:1.4">TRANSMIT REMOVAL REQUEST</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================= RENAME WAREHOUSE MODAL ================= -->
+<div class="b2b-modal" id="renameModal">
+  <div class="b2b-modal-dialog dialog-mid">
+    <div class="modal-header">
+      <div>
+        <div class="dialog-tag">FACILITY DIRECTORY UPDATE</div>
+        <h3>Update Facility Nomenclature</h3>
+        <p class="dialog-sub">Modify the official display designation and regional hub label across the corporate ledger.</p>
+      </div>
+      <button class="dialog-close" data-close type="button" aria-label="Close dialog">✕</button>
+    </div>
+    <div class="modal-content">
+      <form id="renameForm">
+        <div class="form-row">
+          <label for="renameWhId" class="field-title">REGISTERED FACILITY CODE</label>
+          <input id="renameWhId" class="b2b-input input-readonly" type="text" readonly>
+        </div>
+        <div class="form-row">
+          <label for="renameName" class="field-title">OFFICIAL FACILITY TITLE</label>
+          <input id="renameName" class="b2b-input" type="text" placeholder="e.g. Amazon — Northern Distribution Center" required>
+        </div>
+        <div class="form-row">
+          <label for="renameCity" class="field-title">REGIONAL HUB / CITY DESIGNATION</label>
+          <input id="renameCity" class="b2b-input" type="text" placeholder="e.g. New Delhi NCR" required>
+        </div>
+        <div id="renameError" class="form-error" hidden></div>
+        <div class="dialog-btn-row">
+          <button class="b2b-btn b2b-btn-secondary" data-close type="button" style="flex:1">CANCEL</button>
+          <button class="b2b-btn b2b-btn-primary" id="renameSubmit" type="submit" style="flex:1.2">SAVE SPECIFICATION</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script src="js/api-config.js"></script>
+<script src="js/floor.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
