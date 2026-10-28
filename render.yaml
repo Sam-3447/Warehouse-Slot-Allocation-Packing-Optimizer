@@ -1,0 +1,35 @@
+# Render Blueprint for NexVault Backend Web Service
+# Docs: https://render.com/docs/blueprint-spec
+
+services:
+  - type: web
+    name: nexvault-backend
+    runtime: node
+    rootDir: Backend
+    plan: free
+    region: oregon
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: FRONTEND_URL
+        value: https://nexvault-warehouse.vercel.app
+      - key: PLATFORM_ADMIN_EMAIL
+        value: admin@nexvault.internal
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: SENDGRID_FROM_EMAIL
+        value: optivault601@gmail.com
+      - key: EMAIL_SENDER_NAME
+        value: NexVault Platform
