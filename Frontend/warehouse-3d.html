@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NexVault 3D — Warehouse Spatial View</title>
+<meta name="description" content="Interactive 3D spatial model of the warehouse floor with 360-degree orbit, live slot telemetry, and inventory manifest export.">
+<link rel="stylesheet" href="css/floor.css">
+<style>
+  :root {
+    --bg-main: #0c0e12;
+    --bg-card: #141720;
+    --bg-control: #1c212d;
+    --border-color: #262c3b;
+    --border-hover: #3a4358;
+    --text-main: #f1f5f9;
+    --text-muted: #8e99ab;
+    --accent: #2563eb;
+    --accent-red: #cf2e2e;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    user-select: none;
+  }
+
+  .studio-layout {
+    display: flex;
+    flex-direction: column;
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  /* =========================================================================
+     1. TOP APPLICATION BAR (Clean, Grounded, Professional)
+     ========================================================================= */
+  .top-bar {
+    height: 52px;
+    background: #11141b;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    z-index: 30;
+  }
+
+  .top-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .brand-sq {
+    width: 26px;
+    height: 26px;
+    background: var(--accent-red);
+    color: #fff;
+    font-weight: 800;
+    font-size: 13px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .brand-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+  }
+  .breadcrumb-sep {
+    color: #4b5563;
+    font-weight: normal;
+  }
+  .warehouse-pill {
+    background: #1e2433;
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+
+  /* Center Telemetry Readouts */
+  .top-stats {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .top-stat-item {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    font-size: 11px;
+  }
+  .top-stat-item .val {
+    font-size: 13px;
+    font-weight: 700;
+    color: #fff;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  }
+  .top-stat-item .lbl {
+    color: var(--text-muted);
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+
+  /* Right Action Buttons */
+  .top-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-bar {
+    background: var(--bg-control);
+    border: 1px solid var(--border-color);
+    color: #e2e8f0;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+  .btn-bar:hover {
+    background: #252c3c;
+    border-color: var(--border-hover);
+    color: #fff;
+  }
+  .btn-bar.export-csv {
+    background: #164028;
+    border-color: #235d3a;
+    color: #86efac;
+  }
+  .btn-bar.export-csv:hover {
+    background: #1c5234;
+    color: #bbf7d0;
+  }
+  .btn-bar.primary {
+    background: var(--accent);
+    border-color: #3b82f6;
+    color: #fff;
+  }
+  .btn-bar.primary:hover {
+    background: #1d4ed8;
+  }
+
+  /* =========================================================================
+     2. 3D VIEWPORT CANVAS (Full Viewport, Immersive, Smooth)
+     ========================================================================= */
+  .stage-wrap.viewport-studio {
+    flex: 1;
+    width: 100vw;
+    height: calc(100vh - 52px);
+    position: relative;
+    overflow: hidden;
+    background: radial-gradient(circle at 50% 35%, #151922 0%, #0a0c10 75%, #050608 100%);
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    perspective: 1400px;
+    padding: 0;
+  }
+  .stage-wrap.viewport-studio:active { cursor: grabbing; }
+
+  /* Architectural drafting grid */
+  .stage-wrap.viewport-studio::before {
+    content: "";
+    position: absolute;
+    inset: -60%;
+    background-image: 
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 38px 38px;
+    transform: rotateX(60deg);
+    pointer-events: none;
+  }
+
+  /* =========================================================================
+     3. FLOATING CAMERA CONTROL BAR (Minimalist Studio Bar, Bottom Center)
+     ========================================================================= */
+  .floating-controls {
+    position: absolute;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 25;
+    background: rgba(18, 22, 31, 0.95);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 5px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6);
+  }
+
+  .ctrl-cluster {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .ctrl-sep {
+    width: 1px;
+    height: 18px;
+    background: var(--border-color);
+  }
+
+  .btn-tool {
+    background: transparent;
+    border: 1px solid transparent;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 600;
+    padding: 5px 9px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.15s ease;
+  }
+  .btn-tool:hover {
+    color: #fff;
+    background: #232a39;
+  }
+  .btn-tool.active {
+    background: #2563eb;
+    color: #ffffff !important;
+    border-color: #3b82f6;
+  }
+
+  .slider-cluster {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+  .slider-cluster input[type="range"] {
+    width: 85px;
+    cursor: pointer;
+  }
+  .deg-box {
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 700;
+    color: #38bdf8;
+    min-width: 32px;
+    text-align: center;
+  }
+
+  /* =========================================================================
+     4. SLOT TELEMETRY HOVER CARD (Top Right, Clean & Elegant)
+     ========================================================================= */
+  .telemetry-card {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 290px;
+    z-index: 25;
+    background: rgba(18, 22, 31, 0.94);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 12px 14px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+  .telemetry-card.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-6px);
+  }
+  .tel-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+  }
+  .tel-slot-id {
+    font-size: 15px;
+    font-weight: 800;
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: #38bdf8;
+  }
+  .tel-status-badge {
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .tel-status-badge.vacant { background: #14532d; color: #86efac; border: 1px solid #16a34a; }
+  .tel-status-badge.occupied { background: #1e3a8a; color: #93c5fd; border: 1px solid #2563eb; }
+  .tel-status-badge.congested { background: #7f1d1d; color: #fca5a5; border: 1px solid #dc2626; }
+
+  .tel-meta-row {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+  .tel-bar-group {
+    margin-bottom: 8px;
+  }
+  .tel-bar-header {
+    display: flex;
+    justify-content: space-between;
+    font-size: 10px;
+    color: var(--text-muted);
+    margin-bottom: 3px;
+  }
+  .tel-bar-track {
+    height: 5px;
+    background: #0d1017;
+    border: 1px solid #262c3b;
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .tel-bar-fill {
+    height: 100%;
+    background: #2563eb;
+    border-radius: 3px;
+  }
+
+  .tel-items-box {
+    background: #0f121a;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    padding: 8px;
+    margin-top: 6px;
+    font-size: 11px;
+    color: #cbd5e1;
+    max-height: 110px;
+    overflow-y: auto;
+  }
+
+  /* Bottom Left Shortcut Info */
+  .shortcuts-hint {
+    position: absolute;
+    bottom: 24px;
+    left: 20px;
+    z-index: 25;
+    font-size: 10px;
+    color: var(--text-muted);
+    background: rgba(18, 22, 31, 0.85);
+    border: 1px solid var(--border-color);
+    padding: 4px 10px;
+    border-radius: 6px;
+  }
+  .shortcuts-hint kbd {
+    background: #252c3c;
+    border: 1px solid #363f52;
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #fff;
+    font-family: inherit;
+  }
+
+  @media (max-width: 850px) {
+    .top-stats { display: none; }
+  }
+
+  @media (max-width: 680px) {
+    .top-bar {
+      height: auto;
+      min-height: 48px;
+      padding: 8px 12px;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .top-left {
+      gap: 8px;
+    }
+    .brand-title {
+      font-size: 12px;
+    }
+    .breadcrumb-sep, #whName {
+      display: none;
+    }
+    .top-right {
+      gap: 6px;
+      margin-left: auto;
+    }
+    .btn-bar {
+      padding: 5px 8px;
+      font-size: 10px;
+      gap: 4px;
+    }
+    .btn-bar.export-csv .csv-txt {
+      display: none;
+    }
+    .shortcuts-hint {
+      display: none;
+    }
+    .floating-controls {
+      bottom: 12px;
+      width: calc(100% - 16px);
+      max-width: 440px;
+      padding: 6px 8px;
+      gap: 4px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .ctrl-sep {
+      display: none;
+    }
+    .ctrl-cluster {
+      gap: 3px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .btn-tool {
+      padding: 4px 7px;
+      font-size: 10px;
+    }
+    .slider-cluster {
+      gap: 4px;
+      font-size: 10px;
+    }
+    .slider-cluster input[type="range"] {
+      width: 60px;
+    }
+    .deg-box {
+      min-width: 26px;
+      font-size: 10px;
+    }
+    .telemetry-card {
+      top: 10px;
+      right: 10px;
+      left: 10px;
+      width: auto;
+      max-width: 360px;
+      margin: 0 auto;
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.7);
+    }
+  }
+
+  @media (max-width: 420px) {
+    .top-bar {
+      padding: 6px 10px;
+    }
+    .warehouse-pill {
+      font-size: 10px;
+      padding: 1px 6px;
+    }
+    .btn-bar {
+      padding: 4px 6px;
+      font-size: 9.5px;
+    }
+    .btn-tool {
+      padding: 3px 6px;
+      font-size: 9.5px;
+    }
+    .slider-cluster label {
+      display: none;
+    }
+    .slider-cluster input[type="range"] {
+      width: 50px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="studio-layout">
+  <!-- 1. Top Application Bar -->
+  <header class="top-bar">
+    <div class="top-left">
+      <div class="brand-sq">N</div>
+      <div class="brand-title">
+        NexVault
+        <span class="breadcrumb-sep">/</span>
+        <span id="whName">Warehouse in 3D</span>
+      </div>
+      <span class="warehouse-pill" id="whBadge">WH-MOH</span>
+    </div>
+
+    <!-- Live Floor Telemetry Stats -->
+    <div class="top-stats">
+      <div class="top-stat-item">
+        <span class="val" id="statCap">—%</span>
+        <span class="lbl">Capacity</span>
+      </div>
+      <div class="top-stat-item">
+        <span class="val" id="statSlots">—</span>
+        <span class="lbl">Slots</span>
+      </div>
+      <div class="top-stat-item">
+        <span class="val" id="statEmpty">—</span>
+        <span class="lbl">Empty</span>
+      </div>
+      <div class="top-stat-item">
+        <span class="val" id="statLitres">— L</span>
+        <span class="lbl">Volume</span>
+      </div>
+    </div>
+
+    <!-- Top Right Action Controls -->
+    <div class="top-right">
+      <button class="btn-bar export-csv" id="btnExportCSV" type="button" title="Download warehouse inventory manifest spreadsheet">
+        📥 <span class="csv-txt">Export </span>CSV
+      </button>
+
+      <button class="btn-bar" id="btnSync" type="button" title="Re-fetch live floor allocations">
+        <span id="syncIco">⟳</span> Sync
+      </button>
+
+      <a class="btn-bar primary" href="warehouse-floor.html" title="Return to 2D operational floor plan">
+        ← Floor Plan
+      </a>
+    </div>
+  </header>
+
+  <!-- 2. Full 3D Viewport Studio -->
+  <div class="stage-wrap viewport-studio" id="stageWrap3D">
+    <div class="stage" id="stage3d"></div>
+
+    <!-- Floating Slot Inspection Popover (Top Right) -->
+    <div class="telemetry-card hidden" id="slotCard">
+      <div class="tel-head">
+        <span class="tel-slot-id" id="cardSlotId">A-1-1</span>
+        <span class="tel-status-badge vacant" id="cardSlotBadge">Empty</span>
+        <button id="cardCloseBtn" type="button" style="background:none; border:none; color:var(--text-muted); font-size:14px; cursor:pointer; padding:0 4px; line-height:1;" aria-label="Close">✕</button>
+      </div>
+      <div class="tel-meta-row" id="cardSlotMeta">
+        Rack A · Bay 1 · Level 1 · Fast Pick
+      </div>
+
+      <div class="tel-bar-group">
+        <div class="tel-bar-header">
+          <span>Volume Fill:</span>
+          <b id="cardFillVal">0% (0 / 500 L)</b>
+        </div>
+        <div class="tel-bar-track">
+          <div class="tel-bar-fill" id="cardFillBar" style="width:0%;"></div>
+        </div>
+      </div>
+
+      <div class="tel-bar-group">
+        <div class="tel-bar-header">
+          <span>Weight Load:</span>
+          <b id="cardWeightVal">0 / 60 kg</b>
+        </div>
+        <div class="tel-bar-track">
+          <div class="tel-bar-fill" id="cardWeightBar" style="width:0%; background:#16a34a;"></div>
+        </div>
+      </div>
+
+      <div class="tel-items-box" id="cardItems">
+        Position is open for inbound stock.
+      </div>
+    </div>
+
+    <!-- Bottom Left Shortcuts Guide -->
+    <div class="shortcuts-hint">
+      <span>🖱 Drag to orbit · ⚙ Scroll to zoom · <kbd>Space</kbd> 360° spin · <kbd>1-4</kbd> Presets · <kbd>R</kbd> Reset</span>
+    </div>
+
+    <!-- 3. Minimalist Floating Controls (Bottom Center) -->
+    <div class="floating-controls">
+      <!-- Camera Angle Presets -->
+      <div class="ctrl-cluster">
+        <button class="btn-tool active" id="btnReset3D" type="button" title="Isometric 3D View (1)">Isometric</button>
+        <button class="btn-tool" id="btnTop3D" type="button" title="Top Plan View (2)">Top</button>
+        <button class="btn-tool" id="btnSide3D" type="button" title="Side Profile View (3)">Side</button>
+        <button class="btn-tool" id="btnFront3D" type="button" title="Front Dock View (4)">Front</button>
+      </div>
+
+      <div class="ctrl-sep"></div>
+
+      <!-- Turntable Spin & Degree Slider -->
+      <div class="ctrl-cluster">
+        <button class="btn-tool" id="btnAutoRotate360" type="button" title="Continuous 360° Turntable Spin (Space)">
+          <span class="spin-ico">⟳</span> Auto 360°
+        </button>
+        <div class="slider-cluster">
+          <label for="rot360Slider">Angle:</label>
+          <input type="range" id="rot360Slider" min="0" max="360" value="328" step="1">
+          <span class="deg-box" id="rot360Val">328°</span>
+        </div>
+      </div>
+
+      <div class="ctrl-sep"></div>
+
+      <!-- Zoom Controls -->
+      <div class="ctrl-cluster">
+        <button class="btn-tool" id="btnZoomOut" type="button" title="Zoom Out (−)">−</button>
+        <button class="btn-tool" id="btnZoomReset" type="button" title="Reset Viewport (R)"><span id="zoomLevel">100%</span></button>
+        <button class="btn-tool" id="btnZoomIn" type="button" title="Zoom In (+)">+</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/api-config.js"></script>
+<script src="js/floor.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', async function(){
+  const activeId = activeWarehouseId() || 'WH-MOH';
+  WAREHOUSE = loadWarehouse(activeId);
+  const info = warehouseInfo(activeId);
+
+  // Set titles
+  const nameEl = document.getElementById('whName');
+  const badgeEl = document.getElementById('whBadge');
+  if(nameEl) nameEl.textContent = (info ? info.name : WAREHOUSE.name);
+  if(badgeEl) badgeEl.textContent = activeId;
+
+  // Preserve admin view mode on return link if arriving from company admin
+  const returnLink = document.querySelector('a[href="warehouse-floor.html"]');
+  if(returnLink){
+    const isAdm = (typeof isCompanyAdminView === 'function' && isCompanyAdminView()) ||
+                  sessionStorage.getItem('nexvault-admin-view') === 'true' ||
+                  sessionStorage.getItem('optivault-admin-view') === 'true' ||
+                  new URLSearchParams(window.location.search).get('view') === 'admin';
+    if(isAdm){
+      returnLink.href = 'warehouse-floor.html?view=admin';
+    }
+  }
+
+  // Render Initial Stats & 3D Model
+  updateHeaderStats();
+  render3D();
+  init3DRotation();
+  initHoverCard();
+  initCSVExport();
+
+  // Asynchronously synchronize live state directly from MongoDB Atlas Cloud
+  await syncFromCloud(activeId);
+  render3D();
+  updateHeaderStats();
+
+  // Sync Button with MongoDB Atlas
+  const syncBtn = document.getElementById('btnSync');
+  const syncIco = document.getElementById('syncIco');
+  if(syncBtn){
+    syncBtn.addEventListener('click', async function(){
+      if(syncIco) syncIco.style.transform = 'rotate(360deg)';
+      syncBtn.textContent = 'Syncing...';
+      await syncFromCloud(activeId);
+      render3D();
+      updateHeaderStats();
+      syncBtn.textContent = '✓ Synced with Cloud';
+      setTimeout(() => { syncBtn.innerHTML = '<span id="syncIco">⟳</span> Sync'; }, 1200);
+    });
+  }
+});
+
+function updateHeaderStats(){
+  const stats = warehouseStats(WAREHOUSE);
+  const capEl = document.getElementById('statCap');
+  const slotsEl = document.getElementById('statSlots');
+  const emptyEl = document.getElementById('statEmpty');
+  const litresEl = document.getElementById('statLitres');
+
+  if(capEl){
+    capEl.textContent = stats.capacityUsed + '%';
+    capEl.style.color = stats.capacityUsed >= 85 ? '#ef4444' : stats.capacityUsed >= 60 ? '#f59e0b' : '#38bdf8';
+  }
+  if(slotsEl) slotsEl.textContent = stats.totalSlots;
+  if(emptyEl) emptyEl.textContent = stats.emptySlots;
+  if(litresEl) litresEl.textContent = stats.usedLitres.toLocaleString() + ' L';
+}
+
+function initHoverCard(){
+  const card = document.getElementById('slotCard');
+  const closeBtn = document.getElementById('cardCloseBtn');
+  const sId = document.getElementById('cardSlotId');
+  const sBadge = document.getElementById('cardSlotBadge');
+  const sMeta = document.getElementById('cardSlotMeta');
+  const sFillVal = document.getElementById('cardFillVal');
+  const sFillBar = document.getElementById('cardFillBar');
+  const sWeightVal = document.getElementById('cardWeightVal');
+  const sWeightBar = document.getElementById('cardWeightBar');
+  const sItems = document.getElementById('cardItems');
+
+  if(closeBtn){
+    closeBtn.addEventListener('click', function(e){
+      e.stopPropagation();
+      if(card) card.classList.add('hidden');
+    });
+  }
+
+  function populateCard(slotId){
+    const target = allSlots(WAREHOUSE).find(s => s.slot.id === slotId);
+    if(!target) return;
+
+    const slot = target.slot;
+    const fill = slotFill(slot);
+    const usedKg = Math.round(usedWeight(slot));
+    const maxKg = slot.maxWeight;
+    const usedVol = Math.round(usedVolume(slot));
+    const maxVol = slot.maxVolume;
+
+    if(sId) sId.textContent = slot.id;
+    if(sMeta) sMeta.textContent = `${target.rack.name} · Bay ${slot.bay} · Level ${slot.level} (${target.rack.zone})`;
+
+    if(sFillVal) sFillVal.textContent = `${fill}% (${usedVol} / ${maxVol} L)`;
+    if(sFillBar){
+      sFillBar.style.width = fill + '%';
+      sFillBar.style.background = fill >= 85 ? '#dc2626' : fill >= 40 ? '#2563eb' : '#16a34a';
+    }
+
+    const wtPerc = Math.min(100, Math.round((usedKg / maxKg) * 100));
+    if(sWeightVal) sWeightVal.textContent = `${usedKg} / ${maxKg} kg (${wtPerc}%)`;
+    if(sWeightBar) sWeightBar.style.width = wtPerc + '%';
+
+    if(sBadge){
+      if(slot.units.length === 0){
+        sBadge.className = 'tel-status-badge vacant';
+        sBadge.textContent = 'Empty';
+      }else if(fill >= 85){
+        sBadge.className = 'tel-status-badge congested';
+        sBadge.textContent = `${fill}% Congested`;
+      }else{
+        sBadge.className = 'tel-status-badge occupied';
+        sBadge.textContent = `${fill}% Full`;
+      }
+    }
+
+    if(sItems){
+      if(slot.units.length === 0){
+        sItems.innerHTML = '<span style="color:#16a34a;">● Position is empty and ready for inbound putaway.</span>';
+      }else{
+        const counts = {};
+        slot.units.forEach(u => {
+          counts[u.sku] = counts[u.sku] || { count: 0, weight: u.weight };
+          counts[u.sku].count++;
+        });
+        sItems.innerHTML = Object.keys(counts).map(sku => {
+          const it = counts[sku];
+          return `<div style="display:flex; justify-content:space-between; margin-bottom:2px;">
+            <b>${sku}</b>
+            <span style="color:#94a3b8;">${it.count} units · ${it.weight * it.count} kg</span>
+          </div>`;
+        }).join('');
+      }
+    }
+
+    if(card) card.classList.remove('hidden');
+  }
+
+  window.populateCard = populateCard;
+
+  document.querySelectorAll('.box3').forEach(box => {
+    box.addEventListener('mouseenter', function(){
+      populateCard(box.getAttribute('data-slot'));
+    });
+
+    box.addEventListener('mouseleave', function(){
+      // On non-touch screens, hide on mouse leave
+      if(window.matchMedia('(hover: hover)').matches && card){
+        card.classList.add('hidden');
+      }
+    });
+
+    box.addEventListener('click', function(e){
+      e.stopPropagation();
+      populateCard(box.getAttribute('data-slot'));
+    });
+  });
+
+  document.addEventListener('click', function(e){
+    if(card && !card.contains(e.target) && !e.target.closest('.box3')){
+      card.classList.add('hidden');
+    }
+  });
+}
+
+function initCSVExport(){
+  const btn = document.getElementById('btnExportCSV');
+  if(!btn) return;
+
+  btn.addEventListener('click', function(){
+    const rows = [
+      ['Warehouse ID', 'Rack ID', 'Zone', 'Slot Code', 'Bay', 'Level', 'Fill %', 'Capacity (L)', 'Used (L)', 'Max Weight (kg)', 'Current Weight (kg)', 'SKUs Stored']
+    ];
+
+    allSlots(WAREHOUSE).forEach(entry => {
+      const s = entry.slot;
+      const r = entry.rack;
+      const fill = slotFill(s);
+      const usedKg = Math.round(usedWeight(s));
+      const usedVol = Math.round(usedVolume(s));
+      const skus = (s.units || []).map(u => u.sku).join('; ');
+
+      rows.push([
+        WAREHOUSE.id,
+        r.id,
+        r.zone,
+        s.id,
+        s.bay,
+        s.level,
+        fill + '%',
+        s.maxVolume,
+        usedVol,
+        s.maxWeight,
+        usedKg,
+        `"${skus}"`
+      ]);
+    });
+
+    const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `NexVault_${WAREHOUSE.id}_Inventory_Manifest.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+}
+</script>
+</body>
+</html>
